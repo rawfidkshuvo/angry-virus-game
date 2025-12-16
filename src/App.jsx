@@ -37,6 +37,7 @@ import {
   Settings,
   Home,
   Sparkles,
+  Trash2, // Added Trash2 icon
 } from "lucide-react";
 
 // --- Firebase Config & Init ---
@@ -46,7 +47,7 @@ const firebaseConfig = {
   projectId: "game-hub-ff8aa",
   storageBucket: "game-hub-ff8aa.firebasestorage.app",
   messagingSenderId: "586559578902",
-  appId: "1:586559578902:web:c023451f7802fb676aa637"
+  appId: "1:586559578902:web:c023451f7802fb676aa637",
 };
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -357,6 +358,15 @@ export default function AngryVirus() {
         if (snap.exists()) {
           const data = snap.data();
           setGameState(data);
+
+          // Check if user was kicked
+          if (data.players && !data.players.find((p) => p.id === user.uid)) {
+            setRoomId("");
+            setView("menu");
+            setError("You have been removed from the quarantine zone.");
+            return;
+          }
+
           if (data.status === "playing" || data.status === "finished")
             setView("game");
           else if (data.status === "lobby") setView("lobby");
@@ -512,6 +522,17 @@ export default function AngryVirus() {
     setShowLeaveConfirm(false);
   };
 
+  const kickPlayer = async (pid) => {
+    if (gameState.hostId !== user.uid) return;
+    const players = gameState.players.filter((p) => p.id !== pid);
+    await updateDoc(
+      doc(db, "artifacts", APP_ID, "public", "data", "rooms", roomId),
+      {
+        players,
+      }
+    );
+  };
+
   const startGame = async () => {
     if (gameState.hostId !== user.uid) return;
     const pCount = gameState.players.length;
@@ -537,6 +558,7 @@ export default function AngryVirus() {
       ...p,
       tokens: initialTokens,
       cards: [],
+      ready: false, // Reset ready state
     }));
     const randStart = Math.floor(Math.random() * pCount);
 
@@ -635,7 +657,7 @@ export default function AngryVirus() {
     );
   };
 
-  const resetGame = async () => {
+  const returnToLobby = async () => {
     if (gameState.hostId !== user.uid) return;
     // Reset to lobby state
     const players = gameState.players.map((p) => ({
@@ -655,12 +677,24 @@ export default function AngryVirus() {
         logs: [],
       }
     );
+    setShowLeaveConfirm(false);
   };
 
-  const returnToLobby = async () => {
+  const restartGame = async () => {
     if (gameState.hostId !== user.uid) return;
-    resetGame();
-    setShowLeaveConfirm(false);
+    await startGame();
+  };
+
+  const toggleReady = async () => {
+    if (!roomId || !user) return;
+    const updatedPlayers = gameState.players.map((p) =>
+      p.id === user.uid ? { ...p, ready: !p.ready } : p
+    );
+
+    await updateDoc(
+      doc(db, "artifacts", APP_ID, "public", "data", "rooms", roomId),
+      { players: updatedPlayers }
+    );
   };
 
   // --- Render ---
@@ -820,9 +854,20 @@ export default function AngryVirus() {
                     {p.name}
                   </span>
                 </div>
-                {p.id === gameState.hostId && (
-                  <Crown size={16} className="text-yellow-500" />
-                )}
+                <div className="flex items-center gap-2">
+                  {p.id === gameState.hostId && (
+                    <Crown size={16} className="text-yellow-500" />
+                  )}
+                  {isHost && p.id !== user.uid && (
+                    <button
+                      onClick={() => kickPlayer(p.id)}
+                      className="text-gray-500 hover:text-red-500 p-1 transition-colors"
+                      title="Kick Player"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  )}
+                </div>
               </div>
             ))}
             {gameState.players.length < 2 && (
@@ -899,6 +944,11 @@ export default function AngryVirus() {
 
     // Get last two logs
     const recentLogs = gameState.logs ? gameState.logs.slice(-2).reverse() : [];
+
+    // Check readiness
+    const allGuestsReady = gameState.players
+      .filter((p) => p.id !== gameState.hostId)
+      .every((p) => p.ready);
 
     return (
       <div className="h-screen bg-gray-950 text-white flex flex-col relative overflow-hidden font-sans">
@@ -1013,6 +1063,9 @@ export default function AngryVirus() {
                     <div className="flex items-center gap-3">
                       <span className="font-mono text-gray-500">#{i + 1}</span>
                       <span className="font-bold">{p.name}</span>
+                      {p.ready && (
+                        <CheckCircle size={16} className="text-green-500" />
+                      )}
                     </div>
                     <div className="font-mono text-xl font-bold">
                       {calculateScore(p.cards, p.tokens)} pts
@@ -1021,14 +1074,52 @@ export default function AngryVirus() {
                 ))}
             </div>
 
-            {isHost && (
-              <button
-                onClick={resetGame}
-                className="px-8 py-3 bg-green-600 hover:bg-green-500 rounded-xl font-bold text-white shadow-lg flex items-center gap-2"
-              >
-                <RotateCcw size={20} /> New Game
-              </button>
-            )}
+            <div className="flex flex-col gap-4 items-center w-full max-w-md">
+              {isHost ? (
+                <div className="flex flex-col w-full gap-3">
+                  <div className="flex gap-4 w-full">
+                    <button
+                      onClick={returnToLobby}
+                      disabled={!allGuestsReady}
+                      className={`flex-1 py-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 ${
+                        allGuestsReady
+                          ? "bg-gray-700 hover:bg-gray-600 text-white"
+                          : "bg-gray-800 text-gray-500 cursor-not-allowed border border-gray-700"
+                      }`}
+                    >
+                      <LogOut size={18} /> Lobby
+                    </button>
+                    <button
+                      onClick={restartGame}
+                      disabled={!allGuestsReady}
+                      className={`flex-1 py-3 rounded-xl font-bold text-white shadow-lg transition-all flex items-center justify-center gap-2 ${
+                        allGuestsReady
+                          ? "bg-green-600 hover:bg-green-500 hover:scale-105"
+                          : "bg-gray-800 text-gray-500 cursor-not-allowed border border-gray-700"
+                      }`}
+                    >
+                      <RotateCcw size={18} /> New Game
+                    </button>
+                  </div>
+                  {!allGuestsReady && (
+                    <p className="text-gray-500 text-sm animate-pulse">
+                      Waiting for survivors to confirm status...
+                    </p>
+                  )}
+                </div>
+              ) : !me.ready ? (
+                <button
+                  onClick={toggleReady}
+                  className="w-full py-3 bg-blue-600 hover:bg-blue-500 rounded-xl font-bold text-white shadow-lg animate-pulse transition-all hover:scale-105"
+                >
+                  Ready for Next Game
+                </button>
+              ) : (
+                <div className="w-full py-3 bg-gray-800 rounded-xl font-bold text-green-400 border border-green-500/50 flex items-center justify-center gap-2">
+                  <CheckCircle size={20} /> Waiting for host...
+                </div>
+              )}
+            </div>
           </div>
         )}
 

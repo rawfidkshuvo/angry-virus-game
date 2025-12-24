@@ -301,10 +301,10 @@ const LeaveConfirmModal = ({
         >
           Stay (Cancel)
         </button>
-        {isHost && (
+        {isHost && inGame && (
           <button
             onClick={onConfirmLobby}
-            className="py-3 rounded font-bold transition-colors flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white hidden" // Hidden because Host exit handles everything now
+            className="py-3 rounded font-bold transition-colors flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white"
           >
             <Home size={18} /> Return Crew to Lobby
           </button>

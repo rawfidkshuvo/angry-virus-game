@@ -96,6 +96,15 @@ const calculateScore = (cards, tokens) => {
   return score - tokens;
 };
 
+const Logo = () => (
+  <div className="flex items-center justify-center gap-1 opacity-40 mt-auto pb-2 pt-2 relative z-10">
+    <Biohazard size={12} className="text-green-500" />
+    <span className="text-[10px] font-black tracking-widest text-green-500 uppercase">
+      ANGRY VIRUS
+    </span>
+  </div>
+);
+
 // Helper to group consecutive cards for display
 const groupConsecutiveCards = (cards) => {
   if (!cards || cards.length === 0) return [];
@@ -279,7 +288,9 @@ const LeaveConfirmModal = ({
     <div className="bg-gray-800 rounded-xl border border-gray-700 p-6 max-w-sm w-full text-center shadow-2xl">
       <h3 className="text-xl font-bold text-white mb-2">Abandon Quarantine?</h3>
       <p className="text-gray-400 mb-6 text-sm">
-        {inGame
+        {isHost
+          ? "WARNING: As Host, leaving will disband the group and return everyone to the menu."
+          : inGame
           ? "Leaving now will impact the game for others."
           : "Leaving the lobby will disconnect you."}
       </p>
@@ -293,7 +304,7 @@ const LeaveConfirmModal = ({
         {isHost && (
           <button
             onClick={onConfirmLobby}
-            className="py-3 rounded font-bold transition-colors flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white"
+            className="py-3 rounded font-bold transition-colors flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white hidden" // Hidden because Host exit handles everything now
           >
             <Home size={18} /> Return Crew to Lobby
           </button>
@@ -302,7 +313,7 @@ const LeaveConfirmModal = ({
           onClick={onConfirmLeave}
           className="bg-red-600 hover:bg-red-500 text-white py-3 rounded font-bold transition-colors flex items-center justify-center gap-2"
         >
-          <LogOut size={18} /> Leave Game
+          <LogOut size={18} /> {isHost ? "Disband Group" : "Leave Game"}
         </button>
       </div>
     </div>
@@ -338,6 +349,15 @@ export default function AngryVirus() {
     onAuthStateChanged(auth, setUser);
   }, []);
 
+  // --- Session Restore ---
+  useEffect(() => {
+    const savedRoomId = localStorage.getItem("angryvirus_roomId");
+    if (savedRoomId) {
+      setRoomId(savedRoomId);
+      // We rely on the Room Sync useEffect to handle the view switching
+    }
+  }, []);
+
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "game_hub_settings", "config"), (doc) => {
       if (doc.exists() && doc.data()[GAME_ID]?.maintenance) {
@@ -363,6 +383,7 @@ export default function AngryVirus() {
           if (data.players && !data.players.find((p) => p.id === user.uid)) {
             setRoomId("");
             setView("menu");
+            localStorage.removeItem("angryvirus_roomId"); // Clear session
             setError("You have been removed from the quarantine zone.");
             return;
           }
@@ -371,8 +392,10 @@ export default function AngryVirus() {
             setView("game");
           else if (data.status === "lobby") setView("lobby");
         } else {
+          // Room deleted (Host left)
           setRoomId("");
           setView("menu");
+          localStorage.removeItem("angryvirus_roomId"); // Clear session
           setError("Quarantine zone lifted (Room closed).");
         }
       }
@@ -414,6 +437,7 @@ export default function AngryVirus() {
         winnerId: null,
       }
     );
+    localStorage.setItem("angryvirus_roomId", newId); // Save Session
     setRoomId(newId);
     setLoading(false);
   };
@@ -471,6 +495,7 @@ export default function AngryVirus() {
         }),
       });
     }
+    localStorage.setItem("angryvirus_roomId", roomCodeInput); // Save Session
     setRoomId(roomCodeInput);
     setLoading(false);
   };
@@ -493,9 +518,11 @@ export default function AngryVirus() {
         const data = snap.data();
         const isHost = data.hostId === user.uid;
 
-        if (isHost && data.status === "lobby") {
+        // HOST LEFT: DELETE ROOM (Sends everyone home)
+        if (isHost) {
           await deleteDoc(roomRef);
         } else {
+          // GUEST LEFT: JUST REMOVE SELF
           const newPlayers = data.players.filter((p) => p.id !== user.uid);
           let newStatus = data.status;
           // If game is playing and players drop below 2, end it? Or just let them play solo?
@@ -516,6 +543,9 @@ export default function AngryVirus() {
     } catch (e) {
       console.error("Error leaving room:", e);
     }
+
+    // Clear Session Logic
+    localStorage.removeItem("angryvirus_roomId");
     setRoomId("");
     setView("menu");
     setGameState(null);
@@ -920,6 +950,7 @@ export default function AngryVirus() {
             </div>
           )}
         </div>
+        <Logo />
       </div>
     );
   }
@@ -1313,6 +1344,7 @@ export default function AngryVirus() {
             </div>
           </div>
         </div>
+        <Logo />
       </div>
     );
   }

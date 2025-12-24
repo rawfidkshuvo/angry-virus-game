@@ -523,16 +523,34 @@ export default function AngryVirus() {
           await deleteDoc(roomRef);
         } else {
           // GUEST LEFT: JUST REMOVE SELF
+          // ------------------------------------------------------------------
+          // FIX: Recalculate turnIndex to ensure it stays valid for remaining players
+          // ------------------------------------------------------------------
+          const leavingPlayerIndex = data.players.findIndex(
+            (p) => p.id === user.uid
+          );
           const newPlayers = data.players.filter((p) => p.id !== user.uid);
           let newStatus = data.status;
-          // If game is playing and players drop below 2, end it? Or just let them play solo?
-          // Usually need 2+ players.
+
+          // If the leaving player was BEFORE the current turn, the index must shift down
+          let newTurnIndex = data.turnIndex;
+          if (leavingPlayerIndex < newTurnIndex) {
+            newTurnIndex = Math.max(0, newTurnIndex - 1);
+          }
+          // If turn index is now out of bounds (e.g. last player left), wrap to 0
+          if (newTurnIndex >= newPlayers.length) {
+            newTurnIndex = 0;
+          }
+
+          // If game is playing and players drop below 2, end it?
           if (data.status === "playing" && newPlayers.length < 2) {
             newStatus = "finished";
           }
+
           await updateDoc(roomRef, {
             players: newPlayers,
             status: newStatus,
+            turnIndex: newTurnIndex, // Apply corrected index
             logs: arrayUnion({
               text: `${playerName} abandoned the quarantine.`,
               type: "danger",

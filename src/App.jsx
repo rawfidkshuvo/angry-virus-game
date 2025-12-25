@@ -793,7 +793,7 @@ export default function AngryVirus() {
           <h1 className="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-br from-green-400 to-lime-600 uppercase tracking-tighter">
             Angry Virus
           </h1>
-          <p className="text-green-400/60 tracking-widest uppercase mt-2 font-bold text-sm md:text-base">
+          <p className="text-white-400/60 tracking-[0.3em] uppercase mt-2">
             Infectious Strategy
           </p>
         </div>

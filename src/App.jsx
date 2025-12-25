@@ -788,7 +788,7 @@ export default function AngryVirus() {
         <div className="z-10 text-center mb-8 md:mb-10 animate-in fade-in zoom-in duration-700">
           <Biohazard
             size={64}
-            className="text-green-500 mx-auto mb-4 animate-spin-slow md:w-20 md:h-20"
+            className="text-green-500 mx-auto mb-4 animate-bounce md:w-20 md:h-20"
           />
           <h1 className="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-br from-green-400 to-lime-600 uppercase tracking-tighter">
             Angry Virus
@@ -844,6 +844,20 @@ export default function AngryVirus() {
           </button>
         </div>
         {showGuide && <GameGuideModal onClose={() => setShowGuide(false)} />}
+        <div className="absolute bottom-4 text-slate-600 text-xs text-center">
+          Inspired by No Thanks. A tribute game.
+          <br />
+          Developed by <strong>RAWFID K SHUVO</strong>. Visit{" "}
+          <a
+            href="https://rawfidkshuvo.github.io/gamehub/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-green-500 underline hover:text-green-600"
+          >
+            GAMEHUB
+          </a>{" "}
+          for more games.
+        </div>
       </div>
     );
   }

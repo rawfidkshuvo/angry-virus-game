@@ -1028,7 +1028,7 @@ export default function AngryVirus() {
         )}
 
         {/* Header */}
-        <div className="h-14 md:h-16 bg-gray-900/90 border-b border-gray-800 flex items-center justify-between px-4 z-50 sticky top-0 backdrop-blur-md">
+        <div className="h-14 md:h-16 bg-gray-900/90 border-b border-gray-800 flex items-center justify-between px-4 z-[160] sticky top-0 backdrop-blur-md">
           <div className="flex items-center gap-2">
             <Biohazard className="text-green-500 w-5 h-5 md:w-6 md:h-6" />
             <div className="flex flex-col">
@@ -1069,7 +1069,7 @@ export default function AngryVirus() {
         {/* Guides & Logs */}
         {showGuide && <GameGuideModal onClose={() => setShowGuide(false)} />}
         {showLogs && (
-          <div className="absolute top-16 right-4 w-64 max-h-60 bg-gray-900/95 border border-gray-700 rounded-xl z-40 overflow-y-auto p-2 shadow-2xl">
+          <div className="fixed top-16 right-4 w-64 max-h-60 bg-gray-900/95 border border-gray-700 rounded-xl z-[155] overflow-y-auto p-2 shadow-2xl">
             {gameState.logs
               .slice()
               .reverse()
@@ -1092,7 +1092,7 @@ export default function AngryVirus() {
 
         {/* Game Over Screen */}
         {gameState.status === "finished" && (
-          <div className="fixed inset-0 z-[100] bg-black/95 flex flex-col items-center justify-center p-6 text-center animate-in zoom-in">
+          <div className="fixed inset-0 top-14 z-[150] bg-black/95 flex flex-col items-center justify-center p-6 text-center animate-in zoom-in">
             <Trophy size={80} className="text-yellow-400 mb-6 animate-bounce" />
             <h1 className="text-5xl font-black text-white mb-2 uppercase">
               Survival Complete

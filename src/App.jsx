@@ -105,6 +105,15 @@ const Logo = () => (
   </div>
 );
 
+const LogoBig = () => (
+  <div className="flex items-center justify-center gap-1 opacity-40 mt-auto pb-2 pt-2 relative z-10">
+    <Biohazard size={22} className="text-green-500" />
+    <span className="text-[20px] font-black tracking-widest text-green-500 uppercase">
+      ANGRY VIRUS
+    </span>
+  </div>
+);
+
 // Helper to group consecutive cards for display
 const groupConsecutiveCards = (cards) => {
   if (!cards || cards.length === 0) return [];
@@ -869,6 +878,7 @@ export default function AngryVirus() {
     return (
       <div className="min-h-screen bg-gray-950 text-white flex flex-col items-center justify-center p-4 md:p-6 relative">
         <FloatingBackground />
+        <LogoBig />
 
         {showLeaveConfirm && (
           <LeaveConfirmModal
@@ -1036,7 +1046,7 @@ export default function AngryVirus() {
                 Angry Virus
               </span>
               <span className="text-[10px] text-gray-500 tracking-wider">
-                {gameState.deck.length} Unrevealed
+                {gameState.deck.length} Unrevealed Cards
               </span>
             </div>
           </div>

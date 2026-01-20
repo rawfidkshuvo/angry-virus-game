@@ -137,7 +137,7 @@ const groupConsecutiveCards = (cards) => {
 
 const FloatingBackground = () => (
   <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-    <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-green-900/40 via-gray-950 to-black" />
+    <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_center,var(--tw-gradient-stops))] from-green-900/40 via-gray-950 to-black" />
     <div className="absolute top-0 left-0 w-full h-full opacity-10">
       {[...Array(15)].map((_, i) => (
         <div
@@ -192,7 +192,7 @@ const Card = ({
       </div>
       <div className="font-black text-green-900 z-10">{value}</div>
       <Biohazard className="absolute -bottom-4 -right-4 text-green-800/10 w-3/4 h-3/4" />
-      <div className="absolute inset-0 bg-gradient-to-br from-white/0 to-green-500/10" />
+      <div className="absolute inset-0 bg-linear-to-br from-white/0 to-green-500/10" />
     </div>
   );
 };
@@ -214,7 +214,7 @@ const TokenDisplay = ({ count, size = "md" }) => (
 );
 
 const GameGuideModal = ({ onClose }) => (
-  <div className="fixed inset-0 bg-black/95 z-[150] flex items-center justify-center p-4">
+  <div className="fixed inset-0 bg-black/95 z-150 flex items-center justify-center p-4">
     <div className="bg-gray-900 rounded-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden border border-green-500/30 flex flex-col">
       <div className="p-6 border-b border-gray-800 flex justify-between items-center bg-gray-950">
         <h2 className="text-2xl font-black text-green-500 uppercase tracking-widest flex items-center gap-2">
@@ -293,7 +293,7 @@ const LeaveConfirmModal = ({
   isHost,
   inGame,
 }) => (
-  <div className="fixed inset-0 bg-black/90 z-[200] flex items-center justify-center p-4 animate-in fade-in">
+  <div className="fixed inset-0 bg-black/90 z-200 flex items-center justify-center p-4 animate-in fade-in">
     <div className="bg-gray-800 rounded-xl border border-gray-700 p-6 max-w-sm w-full text-center shadow-2xl">
       <h3 className="text-xl font-bold text-white mb-2">Abandon Quarantine?</h3>
       <p className="text-gray-400 mb-6 text-sm">
@@ -799,7 +799,7 @@ export default function AngryVirus() {
             size={64}
             className="text-green-500 mx-auto mb-4 animate-bounce md:w-20 md:h-20"
           />
-          <h1 className="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-br from-green-400 to-lime-600 uppercase tracking-tighter">
+          <h1 className="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-linear-to-br from-green-400 to-lime-600 uppercase tracking-tighter">
             Angry Virus
           </h1>
           <p className="text-white-400/60 tracking-[0.3em] uppercase mt-2">
@@ -1038,7 +1038,7 @@ export default function AngryVirus() {
         )}
 
         {/* Header */}
-        <div className="h-14 md:h-16 bg-gray-900/90 border-b border-gray-800 flex items-center justify-between px-4 z-[160] sticky top-0 backdrop-blur-md">
+        <div className="h-14 md:h-16 bg-gray-900/90 border-b border-gray-800 flex items-center justify-between px-4 z-160 sticky top-0 backdrop-blur-md">
           <div className="flex items-center gap-2">
             <Biohazard className="text-green-500 w-5 h-5 md:w-6 md:h-6" />
             <div className="flex flex-col">
@@ -1079,7 +1079,7 @@ export default function AngryVirus() {
         {/* Guides & Logs */}
         {showGuide && <GameGuideModal onClose={() => setShowGuide(false)} />}
         {showLogs && (
-          <div className="fixed top-16 right-4 w-64 max-h-60 bg-gray-900/95 border border-gray-700 rounded-xl z-[155] overflow-y-auto p-2 shadow-2xl">
+          <div className="fixed top-16 right-4 w-64 max-h-60 bg-gray-900/95 border border-gray-700 rounded-xl z-155 overflow-y-auto p-2 shadow-2xl">
             {gameState.logs
               .slice()
               .reverse()
@@ -1102,7 +1102,7 @@ export default function AngryVirus() {
 
         {/* Game Over Screen */}
         {gameState.status === "finished" && (
-          <div className="fixed inset-0 top-14 z-[150] bg-black/95 flex flex-col items-center justify-center p-6 text-center animate-in zoom-in">
+          <div className="fixed inset-0 top-14 z-150 bg-black/95 flex flex-col items-center justify-center p-6 text-center animate-in zoom-in">
             <Trophy size={80} className="text-yellow-400 mb-6 animate-bounce" />
             <h1 className="text-5xl font-black text-white mb-2 uppercase">
               Survival Complete

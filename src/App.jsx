@@ -37,7 +37,8 @@ import {
   Settings,
   Home,
   Sparkles,
-  Trash2, // Added Trash2 icon
+  Trash2,
+  FileText, // Added for report icon
 } from "lucide-react";
 
 // --- Firebase Config & Init ---
@@ -89,30 +90,10 @@ const calculateScore = (cards, tokens) => {
       score += sorted[i];
     }
     // If it IS consecutive (e.g. 22 after 21), we essentially "skip" adding it
-    // because the rule is "lowest value in that sequence is counted".
-    // We already added the lowest value when we encountered the start of the sequence.
   }
 
   return score - tokens;
 };
-
-const Logo = () => (
-  <div className="flex items-center justify-center gap-1 opacity-40 mt-auto pb-2 pt-2 relative z-10">
-    <Biohazard size={12} className="text-green-500" />
-    <span className="text-[10px] font-black tracking-widest text-green-500 uppercase">
-      ANGRY VIRUS
-    </span>
-  </div>
-);
-
-const LogoBig = () => (
-  <div className="flex items-center justify-center gap-1 opacity-40 mt-auto pb-2 pt-2 relative z-10">
-    <Biohazard size={22} className="text-green-500" />
-    <span className="text-[20px] font-black tracking-widest text-green-500 uppercase">
-      ANGRY VIRUS
-    </span>
-  </div>
-);
 
 // Helper to group consecutive cards for display
 const groupConsecutiveCards = (cards) => {
@@ -134,6 +115,24 @@ const groupConsecutiveCards = (cards) => {
 };
 
 // --- Components ---
+
+const Logo = () => (
+  <div className="flex items-center justify-center gap-1 opacity-40 mt-auto pb-2 pt-2 relative z-10">
+    <Biohazard size={12} className="text-green-500" />
+    <span className="text-[10px] font-black tracking-widest text-green-500 uppercase">
+      ANGRY VIRUS
+    </span>
+  </div>
+);
+
+const LogoBig = () => (
+  <div className="flex items-center justify-center gap-1 opacity-40 mt-auto pb-2 pt-2 relative z-10">
+    <Biohazard size={22} className="text-green-500" />
+    <span className="text-[20px] font-black tracking-widest text-green-500 uppercase">
+      ANGRY VIRUS
+    </span>
+  </div>
+);
 
 const FloatingBackground = () => (
   <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
@@ -212,6 +211,126 @@ const TokenDisplay = ({ count, size = "md" }) => (
     <span>{count}</span>
   </div>
 );
+
+// --- New Component: Round Summary Modal ---
+const RoundSummaryModal = ({ players, onClose }) => {
+  // Sort players by score (lowest wins)
+  const sortedPlayers = [...players].sort(
+    (a, b) =>
+      calculateScore(a.cards, a.tokens) - calculateScore(b.cards, b.tokens)
+  );
+
+  return (
+    <div className="fixed inset-0 bg-black/95 z-170 flex items-center justify-center p-4 animate-in fade-in">
+      <div className="bg-gray-900 w-full max-w-3xl rounded-2xl border border-gray-700 overflow-hidden shadow-2xl flex flex-col max-h-[85vh]">
+        {/* Header */}
+        <div className="p-6 border-b border-gray-800 bg-gray-950 flex justify-between items-center">
+          <div>
+            <h2 className="text-2xl font-black text-white uppercase tracking-wider flex items-center gap-2">
+              <FileText className="text-green-500" /> Viral Report
+            </h2>
+            <p className="text-gray-500 text-xs mt-1">
+              Detailed breakdown of collected specimens
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-gray-800 rounded-full text-gray-400 hover:text-white transition-colors"
+          >
+            <X size={24} />
+          </button>
+        </div>
+
+        {/* List */}
+        <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4">
+          {sortedPlayers.map((player, idx) => {
+            const score = calculateScore(player.cards, player.tokens);
+            const groups = groupConsecutiveCards(player.cards);
+
+            return (
+              <div
+                key={player.id}
+                className={`rounded-xl p-4 border ${
+                  idx === 0
+                    ? "bg-green-900/10 border-green-500/50"
+                    : "bg-gray-800/40 border-gray-700"
+                }`}
+              >
+                <div className="flex justify-between items-center mb-3">
+                  <div className="flex items-center gap-3">
+                    <span className="font-mono text-gray-500 font-bold">
+                      #{idx + 1}
+                    </span>
+                    <span className="font-bold text-lg text-white">
+                      {player.name}
+                    </span>
+                    {idx === 0 && (
+                      <span className="px-2 py-0.5 rounded text-[10px] bg-green-500 text-black font-bold uppercase">
+                        Cleanest
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-1 text-orange-400 text-sm">
+                      <Pill size={14} /> -{player.tokens} pts
+                    </div>
+                    <div className="text-xl font-black text-white">
+                      {score} <span className="text-xs text-gray-500">PTS</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Cards Visualization */}
+                <div className="flex flex-wrap gap-2">
+                  {groups.length === 0 ? (
+                    <span className="text-xs text-gray-500 italic">
+                      No viruses collected (Incredible!)
+                    </span>
+                  ) : (
+                    groups.map((group, gIdx) => (
+                      <div
+                        key={gIdx}
+                        className="flex items-center p-1 bg-black/30 rounded border border-gray-700/50"
+                      >
+                        {group.map((card, cIdx) => (
+                          <div
+                            key={card}
+                            className={`w-8 h-10 flex items-center justify-center text-xs font-bold rounded mr-1 last:mr-0 ${
+                              cIdx === 0
+                                ? "bg-gray-200 text-red-900 border-2 border-red-500/50 z-10 scale-110 shadow-lg"
+                                : "bg-gray-700 text-gray-400 border border-gray-600 opacity-60 scale-90"
+                            }`}
+                            title={
+                              cIdx === 0
+                                ? "Active Virus (Points Counted)"
+                                : "Contained Virus (Points Ignored)"
+                            }
+                          >
+                            {card}
+                          </div>
+                        ))}
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Footer */}
+        <div className="p-4 border-t border-gray-800 bg-gray-950 flex justify-end">
+          <button
+            onClick={onClose}
+            className="bg-green-600 hover:bg-green-500 text-white px-8 py-3 rounded-xl font-bold flex items-center gap-2 transition-all hover:scale-105"
+          >
+            Proceed to Final Results <ArrowRight size={18} />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const GameGuideModal = ({ onClose }) => (
   <div className="fixed inset-0 bg-black/95 z-150 flex items-center justify-center p-4">
@@ -344,6 +463,8 @@ export default function AngryVirus() {
   const [showLogs, setShowLogs] = useState(false);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const [isMaintenance, setIsMaintenance] = useState(false);
+  // NEW: State for the report modal
+  const [showReport, setShowReport] = useState(false);
 
   // --- Auth & Config ---
   useEffect(() => {
@@ -363,7 +484,6 @@ export default function AngryVirus() {
     const savedRoomId = localStorage.getItem("angryvirus_roomId");
     if (savedRoomId) {
       setRoomId(savedRoomId);
-      // We rely on the Room Sync useEffect to handle the view switching
     }
   }, []);
 
@@ -392,7 +512,7 @@ export default function AngryVirus() {
           if (data.players && !data.players.find((p) => p.id === user.uid)) {
             setRoomId("");
             setView("menu");
-            localStorage.removeItem("angryvirus_roomId"); // Clear session
+            localStorage.removeItem("angryvirus_roomId");
             setError("You have been removed from the quarantine zone.");
             return;
           }
@@ -401,16 +521,25 @@ export default function AngryVirus() {
             setView("game");
           else if (data.status === "lobby") setView("lobby");
         } else {
-          // Room deleted (Host left)
+          // Room deleted
           setRoomId("");
           setView("menu");
-          localStorage.removeItem("angryvirus_roomId"); // Clear session
+          localStorage.removeItem("angryvirus_roomId");
           setError("Quarantine zone lifted (Room closed).");
         }
       }
     );
     return () => unsub();
   }, [roomId, user]);
+
+  // --- NEW: Trigger Report on Finish ---
+  useEffect(() => {
+    if (gameState?.status === "finished") {
+      setShowReport(true);
+    } else {
+      setShowReport(false);
+    }
+  }, [gameState?.status]);
 
   // --- Logic ---
 
@@ -438,7 +567,7 @@ export default function AngryVirus() {
           },
         ],
         deck: [], // Empty until start
-        cardsToRemove: 5, // Default cards to remove
+        cardsToRemove: 5,
         currentCard: null,
         tokensOnCard: 0,
         turnIndex: 0,
@@ -446,7 +575,7 @@ export default function AngryVirus() {
         winnerId: null,
       }
     );
-    localStorage.setItem("angryvirus_roomId", newId); // Save Session
+    localStorage.setItem("angryvirus_roomId", newId);
     setRoomId(newId);
     setLoading(false);
   };
@@ -504,7 +633,7 @@ export default function AngryVirus() {
         }),
       });
     }
-    localStorage.setItem("angryvirus_roomId", roomCodeInput); // Save Session
+    localStorage.setItem("angryvirus_roomId", roomCodeInput);
     setRoomId(roomCodeInput);
     setLoading(false);
   };
@@ -527,31 +656,23 @@ export default function AngryVirus() {
         const data = snap.data();
         const isHost = data.hostId === user.uid;
 
-        // HOST LEFT: DELETE ROOM (Sends everyone home)
         if (isHost) {
           await deleteDoc(roomRef);
         } else {
-          // GUEST LEFT: JUST REMOVE SELF
-          // ------------------------------------------------------------------
-          // FIX: Recalculate turnIndex to ensure it stays valid for remaining players
-          // ------------------------------------------------------------------
           const leavingPlayerIndex = data.players.findIndex(
             (p) => p.id === user.uid
           );
           const newPlayers = data.players.filter((p) => p.id !== user.uid);
           let newStatus = data.status;
 
-          // If the leaving player was BEFORE the current turn, the index must shift down
           let newTurnIndex = data.turnIndex;
           if (leavingPlayerIndex < newTurnIndex) {
             newTurnIndex = Math.max(0, newTurnIndex - 1);
           }
-          // If turn index is now out of bounds (e.g. last player left), wrap to 0
           if (newTurnIndex >= newPlayers.length) {
             newTurnIndex = 0;
           }
 
-          // If game is playing and players drop below 2, end it?
           if (data.status === "playing" && newPlayers.length < 2) {
             newStatus = "finished";
           }
@@ -559,7 +680,7 @@ export default function AngryVirus() {
           await updateDoc(roomRef, {
             players: newPlayers,
             status: newStatus,
-            turnIndex: newTurnIndex, // Apply corrected index
+            turnIndex: newTurnIndex,
             logs: arrayUnion({
               text: `${playerName} abandoned the quarantine.`,
               type: "danger",
@@ -571,12 +692,12 @@ export default function AngryVirus() {
       console.error("Error leaving room:", e);
     }
 
-    // Clear Session Logic
     localStorage.removeItem("angryvirus_roomId");
     setRoomId("");
     setView("menu");
     setGameState(null);
     setShowLeaveConfirm(false);
+    setShowReport(false);
   };
 
   const kickPlayer = async (pid) => {
@@ -595,18 +716,12 @@ export default function AngryVirus() {
     const pCount = gameState.players.length;
     if (pCount < 2) return;
 
-    // Tokens Logic:
-    // 2-5 players: 11 tokens
-    // 6 players: 9 tokens
-    // 7 players: 7 tokens
     let initialTokens = 11;
     if (pCount === 6) initialTokens = 9;
     if (pCount === 7) initialTokens = 7;
 
     let fullDeck = shuffle(Array.from({ length: 33 }, (_, i) => i + 3));
-
-    // Remove cards based on setting
-    const removeCount = gameState.cardsToRemove || 5; // Default 5 if undefined
+    const removeCount = gameState.cardsToRemove || 5;
     fullDeck = fullDeck.slice(0, fullDeck.length - removeCount);
 
     const firstCard = fullDeck.pop();
@@ -615,7 +730,7 @@ export default function AngryVirus() {
       ...p,
       tokens: initialTokens,
       cards: [],
-      ready: false, // Reset ready state
+      ready: false,
     }));
     const randStart = Math.floor(Math.random() * pCount);
 
@@ -639,7 +754,6 @@ export default function AngryVirus() {
   };
 
   const takeAction = async (action) => {
-    // Action: 'PASS' or 'TAKE'
     const players = [...gameState.players];
     const playerIdx = gameState.turnIndex;
     const player = players[playerIdx];
@@ -652,7 +766,7 @@ export default function AngryVirus() {
     let winnerId = null;
 
     if (action === "PASS") {
-      if (player.tokens <= 0) return; // Cannot pass
+      if (player.tokens <= 0) return;
 
       player.tokens -= 1;
       tokensOnCard += 1;
@@ -663,7 +777,6 @@ export default function AngryVirus() {
         type: "neutral",
       });
     } else if (action === "TAKE") {
-      // Take card and tokens
       player.cards.push(currentCard);
       player.cards.sort((a, b) => a - b);
       player.tokens += tokensOnCard;
@@ -673,18 +786,14 @@ export default function AngryVirus() {
         type: "warning",
       });
 
-      // Deal next card
       if (deck.length > 0) {
         currentCard = deck.pop();
         tokensOnCard = 0;
-        // Turn stays with player
       } else {
-        // Game Over
         status = "finished";
         currentCard = null;
         tokensOnCard = 0;
 
-        // Calculate Winner
         const scores = players.map((p) => ({
           id: p.id,
           score: calculateScore(p.cards, p.tokens),
@@ -716,7 +825,6 @@ export default function AngryVirus() {
 
   const returnToLobby = async () => {
     if (gameState.hostId !== user.uid) return;
-    // Reset to lobby state
     const players = gameState.players.map((p) => ({
       ...p,
       cards: [],
@@ -735,11 +843,13 @@ export default function AngryVirus() {
       }
     );
     setShowLeaveConfirm(false);
+    setShowReport(false);
   };
 
   const restartGame = async () => {
     if (gameState.hostId !== user.uid) return;
     await startGame();
+    setShowReport(false);
   };
 
   const toggleReady = async () => {
@@ -770,16 +880,13 @@ export default function AngryVirus() {
             eradicated.
           </p>
         </div>
-        {/* Add Spacing Between Boxes */}
         <div className="h-8"></div>
-
-        {/* Clickable Second Card */}
         <a href="https://rawfidkshuvo.github.io/gamehub/">
           <div className="flex items-center justify-center gap-3 mb-2">
             <div className="text-center pb-12 animate-pulse">
               <div className="inline-flex items-center gap-3 px-8 py-4 bg-slate-900/50 rounded-full border border-indigo-500/20 text-indigo-300 font-bold tracking-widest text-sm uppercase backdrop-blur-sm">
-                <Sparkles size={16} /> Visit Gamehub...Try our other releases...{" "}
-                <Sparkles size={16} />
+                <Sparkles size={16} /> Visit Gamehub...Try our other
+                releases... <Sparkles size={16} />
               </div>
             </div>
           </div>
@@ -792,8 +899,6 @@ export default function AngryVirus() {
     return (
       <div className="min-h-screen bg-gray-950 text-white flex flex-col items-center justify-center p-4 relative overflow-hidden">
         <FloatingBackground />
-
-        {/* Adjusted header for better mobile responsiveness */}
         <div className="z-10 text-center mb-8 md:mb-10 animate-in fade-in zoom-in duration-700">
           <Biohazard
             size={64}
@@ -999,7 +1104,6 @@ export default function AngryVirus() {
 
   if (view === "game" && gameState) {
     const me = gameState.players.find((p) => p.id === user.uid);
-    // GUARD: Ensure players and turn index exist before accessing properties
     if (!me || !gameState.players[gameState.turnIndex]) {
       return (
         <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center">
@@ -1011,14 +1115,9 @@ export default function AngryVirus() {
     const isMyTurn = gameState.players[gameState.turnIndex].id === user.uid;
     const activePlayer = gameState.players[gameState.turnIndex];
     const isHost = gameState.hostId === user.uid;
-
     const myGroups = groupConsecutiveCards(me.cards);
     const score = calculateScore(me.cards, me.tokens);
-
-    // Get last two logs
     const recentLogs = gameState.logs ? gameState.logs.slice(-2).reverse() : [];
-
-    // Check readiness
     const allGuestsReady = gameState.players
       .filter((p) => p.id !== gameState.hostId)
       .every((p) => p.ready);
@@ -1034,6 +1133,14 @@ export default function AngryVirus() {
             onCancel={() => setShowLeaveConfirm(false)}
             isHost={isHost}
             inGame={true}
+          />
+        )}
+
+        {/* --- NEW: REPORT MODAL --- */}
+        {showReport && gameState.status === "finished" && (
+          <RoundSummaryModal
+            players={gameState.players}
+            onClose={() => setShowReport(false)}
           />
         )}
 
@@ -1117,7 +1224,15 @@ export default function AngryVirus() {
               </span>
             </div>
 
-            <div className="grid grid-cols-1 gap-3 w-full max-w-md max-h-[40vh] overflow-y-auto mb-8">
+            {/* Added button to re-open report if they closed it */}
+            <button
+              onClick={() => setShowReport(true)}
+              className="mb-6 flex items-center gap-2 text-green-400 hover:text-green-300 underline"
+            >
+              <FileText size={16} /> View Detailed Report
+            </button>
+
+            <div className="grid grid-cols-1 gap-3 w-full max-w-md max-h-[30vh] overflow-y-auto mb-8">
               {[...gameState.players]
                 .sort(
                   (a, b) =>
@@ -1290,11 +1405,18 @@ export default function AngryVirus() {
               ></div>
               {gameState.currentCard !== null ? (
                 <div className="relative">
-                  <Card value={gameState.currentCard} size="lg" isNew={true} />
+                  <Card
+                    value={gameState.currentCard}
+                    size="lg"
+                    isNew={true}
+                  />
                   {/* Tokens on Card */}
                   {gameState.tokensOnCard > 0 && (
                     <div className="absolute -top-4 -right-4 z-20">
-                      <TokenDisplay count={gameState.tokensOnCard} size="lg" />
+                      <TokenDisplay
+                        count={gameState.tokensOnCard}
+                        size="lg"
+                      />
                     </div>
                   )}
                 </div>
@@ -1377,7 +1499,11 @@ export default function AngryVirus() {
                         key={i}
                         className="transform hover:-translate-y-2 transition-transform"
                       >
-                        <Card value={val} size="sm" isSequenceStart={i === 0} />
+                        <Card
+                          value={val}
+                          size="sm"
+                          isSequenceStart={i === 0}
+                        />
                       </div>
                     ))}
                   </div>

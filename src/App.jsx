@@ -453,8 +453,12 @@ const LeaveConfirmModal = ({
 export default function AngryVirus() {
   const [user, setUser] = useState(null);
   const [view, setView] = useState("menu"); // menu, lobby, game
-  const [playerName, setPlayerName] = useState("");
-  const [roomId, setRoomId] = useState("");
+  const [playerName, setPlayerName] = useState(
+    () => localStorage.getItem("fs_playerName") || ""
+  );
+  const [roomId, setRoomId] = useState(
+    () => localStorage.getItem("fs_roomId") || null
+  );
   const [roomCodeInput, setRoomCodeInput] = useState("");
   const [gameState, setGameState] = useState(null);
   const [error, setError] = useState("");
@@ -480,12 +484,22 @@ export default function AngryVirus() {
   }, []);
 
   // --- Session Restore ---
+  // useEffect(() => {
+  //   const savedRoomId = localStorage.getItem("angryvirus_roomId");
+  //   if (savedRoomId) {
+  //     setRoomId(savedRoomId);
+  //   }
+  // }, []);
+
+  // Save roomId and playerName to localStorage whenever they change
   useEffect(() => {
-    const savedRoomId = localStorage.getItem("angryvirus_roomId");
-    if (savedRoomId) {
-      setRoomId(savedRoomId);
-    }
-  }, []);
+    if (roomId) localStorage.setItem("fs_roomId", roomId);
+    else localStorage.removeItem("fs_roomId");
+  }, [roomId]);
+
+  useEffect(() => {
+    if (playerName) localStorage.setItem("fs_playerName", playerName);
+  }, [playerName]);
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "game_hub_settings", "config"), (doc) => {

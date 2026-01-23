@@ -453,9 +453,6 @@ const LeaveConfirmModal = ({
 export default function AngryVirus() {
   const [user, setUser] = useState(null);
   const [view, setView] = useState("menu"); // menu, lobby, game
-  const [playerName, setPlayerName] = useState(
-    () => localStorage.getItem("angryvirus_playerName") || ""
-  );
   const [roomId, setRoomId] = useState("");
   const [roomCodeInput, setRoomCodeInput] = useState("");
   const [gameState, setGameState] = useState(null);
@@ -467,7 +464,14 @@ export default function AngryVirus() {
   const [isMaintenance, setIsMaintenance] = useState(false);
   // NEW: State for the report modal
   const [showReport, setShowReport] = useState(false);
-
+  //read and fill global name
+  const [playerName, setPlayerName] = useState(
+    () => localStorage.getItem("gameHub_playerName") || ""
+  );
+  //set global name for all game
+  useEffect(() => {
+    if (playerName) localStorage.setItem("gameHub_playerName", playerName);
+  }, [playerName]);
   // --- Auth & Config ---
   useEffect(() => {
     const initAuth = async () => {
@@ -489,11 +493,6 @@ export default function AngryVirus() {
     }
   }, []);
 
-  // Save playerName to localStorage whenever they change
-
-  useEffect(() => {
-    if (playerName) localStorage.setItem("angryvirus_playerName", playerName);
-  }, [playerName]);
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "game_hub_settings", "config"), (doc) => {

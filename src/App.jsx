@@ -149,7 +149,8 @@ const FloatingBackground = () => (
             transform: `scale(${0.5 + Math.random()})`,
           }}
         >
-          <Biohazard size={48} />
+          <Biohazard size={32} />
+          <Pill size={32} />
         </div>
       ))}
     </div>

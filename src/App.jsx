@@ -585,15 +585,19 @@ export default function AngryVirus() {
   const createRoom = async () => {
     if (!playerName) return setError("Name required");
     setLoading(true);
-    const newId = Math.random().toString(36).substring(2, 7).toUpperCase();
+    const chars = "123456789ABCDEFGHIJKLMNPQRSTUVWXYZ";
+    let newRoomId = "";
+    for (let i = 0; i < 6; i++) {
+      newRoomId += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
 
     // Create Deck 3 to 35
     const deck = Array.from({ length: 33 }, (_, i) => i + 3);
 
     await setDoc(
-      doc(db, "artifacts", APP_ID, "public", "data", "rooms", newId),
+      doc(db, "artifacts", APP_ID, "public", "data", "rooms", newRoomId),
       {
-        roomId: newId,
+        roomId: newRoomId,
         hostId: user.uid,
         status: "lobby",
         players: [
@@ -614,8 +618,8 @@ export default function AngryVirus() {
         winnerId: null,
       },
     );
-    localStorage.setItem("angryvirus_roomId", newId);
-    setRoomId(newId);
+    localStorage.setItem("angryvirus_roomId", newRoomId);
+    setRoomId(newRoomId);
     setLoading(false);
   };
 

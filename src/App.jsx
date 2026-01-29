@@ -45,11 +45,11 @@ import {
 // --- Firebase Config & Init ---
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: "game-hub-ff8aa.firebaseapp.com",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: "game-hub-ff8aa.firebasestorage.app",
-  messagingSenderId: "586559578902",
-  appId: "1:586559578902:web:c023451f7802fb676aa637",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -150,15 +150,15 @@ const FloatingBackground = ({ isShaking }) => (
   >
     {/* Background Gradient */}
     <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top,var(--tw-gradient-stops))] from-slate-900/40 via-gray-950 to-black" />
-    
+
     <div className="absolute top-0 left-0 w-full h-full opacity-10">
       {[...Array(20)].map((_, i) => {
         // --- CHANGE START ---
         const diceKeys = Object.keys(DICE_ICONS);
         // We cycle through keys 1-6 based on the index
-        const key = diceKeys[i % diceKeys.length]; 
+        const key = diceKeys[i % diceKeys.length];
         // Direct assignment because DICE_ICONS values are the components themselves
-        const Icon = DICE_ICONS[key]; 
+        const Icon = DICE_ICONS[key];
         // --- CHANGE END ---
 
         return (
@@ -204,8 +204,8 @@ const Card = ({
     size === "lg"
       ? "w-24 h-36 md:w-32 md:h-48 text-3xl md:text-4xl"
       : size === "md"
-      ? "w-16 h-24 md:w-20 md:h-28 text-xl md:text-2xl"
-      : "w-10 h-14 md:w-12 md:h-16 text-xs md:text-sm";
+        ? "w-16 h-24 md:w-20 md:h-28 text-xl md:text-2xl"
+        : "w-10 h-14 md:w-12 md:h-16 text-xs md:text-sm";
 
   return (
     <div
@@ -248,7 +248,7 @@ const RoundSummaryModal = ({ players, onClose }) => {
   // Sort players by score (lowest wins)
   const sortedPlayers = [...players].sort(
     (a, b) =>
-      calculateScore(a.cards, a.tokens) - calculateScore(b.cards, b.tokens)
+      calculateScore(a.cards, a.tokens) - calculateScore(b.cards, b.tokens),
   );
 
   return (
@@ -450,8 +450,8 @@ const LeaveConfirmModal = ({
         {isHost
           ? "WARNING: As Host, leaving will disband the group and return everyone to the menu."
           : inGame
-          ? "Leaving now will impact the game for others."
-          : "Leaving the lobby will disconnect you."}
+            ? "Leaving now will impact the game for others."
+            : "Leaving the lobby will disconnect you."}
       </p>
       <div className="flex flex-col gap-3">
         <button
@@ -497,7 +497,7 @@ export default function AngryVirus() {
   const [showReport, setShowReport] = useState(false);
   //read and fill global name
   const [playerName, setPlayerName] = useState(
-    () => localStorage.getItem("gameHub_playerName") || ""
+    () => localStorage.getItem("gameHub_playerName") || "",
   );
   //set global name for all game
   useEffect(() => {
@@ -523,7 +523,6 @@ export default function AngryVirus() {
       setRoomId(savedRoomId);
     }
   }, []);
-
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "game_hub_settings", "config"), (doc) => {
@@ -565,7 +564,7 @@ export default function AngryVirus() {
           localStorage.removeItem("angryvirus_roomId");
           setError("Quarantine zone lifted (Room closed).");
         }
-      }
+      },
     );
     return () => unsub();
   }, [roomId, user]);
@@ -611,7 +610,7 @@ export default function AngryVirus() {
         turnIndex: 0,
         logs: [],
         winnerId: null,
-      }
+      },
     );
     localStorage.setItem("angryvirus_roomId", newId);
     setRoomId(newId);
@@ -625,7 +624,7 @@ export default function AngryVirus() {
       doc(db, "artifacts", APP_ID, "public", "data", "rooms", roomId),
       {
         cardsToRemove: count,
-      }
+      },
     );
   };
 
@@ -639,7 +638,7 @@ export default function AngryVirus() {
       "public",
       "data",
       "rooms",
-      roomCodeInput
+      roomCodeInput,
     );
     const snap = await getDoc(ref);
     if (!snap.exists()) {
@@ -686,7 +685,7 @@ export default function AngryVirus() {
         "public",
         "data",
         "rooms",
-        roomId
+        roomId,
       );
       const snap = await getDoc(roomRef);
 
@@ -698,7 +697,7 @@ export default function AngryVirus() {
           await deleteDoc(roomRef);
         } else {
           const leavingPlayerIndex = data.players.findIndex(
-            (p) => p.id === user.uid
+            (p) => p.id === user.uid,
           );
           const newPlayers = data.players.filter((p) => p.id !== user.uid);
           let newStatus = data.status;
@@ -745,7 +744,7 @@ export default function AngryVirus() {
       doc(db, "artifacts", APP_ID, "public", "data", "rooms", roomId),
       {
         players,
-      }
+      },
     );
   };
 
@@ -787,7 +786,7 @@ export default function AngryVirus() {
             type: "neutral",
           },
         ],
-      }
+      },
     );
   };
 
@@ -857,7 +856,7 @@ export default function AngryVirus() {
         status,
         winnerId,
         logs: arrayUnion(...logs),
-      }
+      },
     );
   };
 
@@ -878,7 +877,7 @@ export default function AngryVirus() {
         currentCard: null,
         winnerId: null,
         logs: [],
-      }
+      },
     );
     setShowLeaveConfirm(false);
     setShowReport(false);
@@ -893,12 +892,12 @@ export default function AngryVirus() {
   const toggleReady = async () => {
     if (!roomId || !user) return;
     const updatedPlayers = gameState.players.map((p) =>
-      p.id === user.uid ? { ...p, ready: !p.ready } : p
+      p.id === user.uid ? { ...p, ready: !p.ready } : p,
     );
 
     await updateDoc(
       doc(db, "artifacts", APP_ID, "public", "data", "rooms", roomId),
-      { players: updatedPlayers }
+      { players: updatedPlayers },
     );
   };
 
@@ -923,8 +922,8 @@ export default function AngryVirus() {
           <div className="flex items-center justify-center gap-3 mb-2">
             <div className="text-center pb-12 animate-pulse">
               <div className="inline-flex items-center gap-3 px-8 py-4 bg-slate-900/50 rounded-full border border-indigo-500/20 text-indigo-300 font-bold tracking-widest text-sm uppercase backdrop-blur-sm">
-                <Sparkles size={16} /> Visit Gamehub...Try our other
-                releases... <Sparkles size={16} />
+                <Sparkles size={16} /> Visit Gamehub...Try our other releases...{" "}
+                <Sparkles size={16} />
               </div>
             </div>
           </div>
@@ -1235,8 +1234,8 @@ export default function AngryVirus() {
                     l.type === "warning"
                       ? "text-yellow-300 bg-yellow-900/20"
                       : l.type === "success"
-                      ? "text-green-300 bg-green-900/20"
-                      : "text-gray-400"
+                        ? "text-green-300 bg-green-900/20"
+                        : "text-gray-400"
                   }`}
                 >
                   {l.text}
@@ -1275,7 +1274,7 @@ export default function AngryVirus() {
                 .sort(
                   (a, b) =>
                     calculateScore(a.cards, a.tokens) -
-                    calculateScore(b.cards, b.tokens)
+                    calculateScore(b.cards, b.tokens),
                 )
                 .map((p, i) => (
                   <div
@@ -1419,8 +1418,8 @@ export default function AngryVirus() {
                     l.type === "warning"
                       ? "bg-yellow-900/60 border-yellow-500/30 text-yellow-100"
                       : l.type === "success"
-                      ? "bg-green-900/60 border-green-500/30 text-green-100"
-                      : "bg-gray-800/60 border-gray-600/30 text-gray-200"
+                        ? "bg-green-900/60 border-green-500/30 text-green-100"
+                        : "bg-gray-800/60 border-gray-600/30 text-gray-200"
                   }`}
                 >
                   {l.text}
@@ -1443,18 +1442,11 @@ export default function AngryVirus() {
               ></div>
               {gameState.currentCard !== null ? (
                 <div className="relative">
-                  <Card
-                    value={gameState.currentCard}
-                    size="lg"
-                    isNew={true}
-                  />
+                  <Card value={gameState.currentCard} size="lg" isNew={true} />
                   {/* Tokens on Card */}
                   {gameState.tokensOnCard > 0 && (
                     <div className="absolute -top-4 -right-4 z-20">
-                      <TokenDisplay
-                        count={gameState.tokensOnCard}
-                        size="lg"
-                      />
+                      <TokenDisplay count={gameState.tokensOnCard} size="lg" />
                     </div>
                   )}
                 </div>
@@ -1537,11 +1529,7 @@ export default function AngryVirus() {
                         key={i}
                         className="transform hover:-translate-y-2 transition-transform"
                       >
-                        <Card
-                          value={val}
-                          size="sm"
-                          isSequenceStart={i === 0}
-                        />
+                        <Card value={val} size="sm" isSequenceStart={i === 0} />
                       </div>
                     ))}
                   </div>

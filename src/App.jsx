@@ -40,6 +40,7 @@ import {
   Sparkles,
   Trash2,
   FileText, // Added for report icon
+  Copy,
 } from "lucide-react";
 
 // --- Firebase Config & Init ---
@@ -748,6 +749,21 @@ export default function AngryVirus() {
     );
   };
 
+  const copyToClipboard = () => {
+    try {
+      navigator.clipboard.writeText(roomId);
+      triggerFeedback("neutral", "COPIED!", "", CheckCircle);
+    } catch (e) {
+      const el = document.createElement("textarea");
+      el.value = roomId;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand("copy");
+      document.body.removeChild(el);
+      triggerFeedback("neutral", "COPIED!", "", CheckCircle);
+    }
+  };
+
   const startGame = async () => {
     if (gameState.hostId !== user.uid) return;
     const pCount = gameState.players.length;
@@ -1038,10 +1054,20 @@ export default function AngryVirus() {
               <h2 className="text-lg md:text-xl text-green-500 font-bold uppercase">
                 Quarantine Zone
               </h2>
-              <div className="text-2xl md:text-3xl font-mono text-white font-black">
-                {gameState.roomId}
+              {/* NEW: Flex container to align ID and Button side-by-side */}
+              <div className="flex items-center gap-3">
+                <div className="text-2xl md:text-3xl font-mono text-white font-black">
+                  {gameState.roomId}
+                </div>
+                <button
+                  onClick={copyToClipboard}
+                  className="p-2 hover:bg-white/10 rounded-full transition-colors"
+                >
+                  <Copy size={16} />
+                </button>
               </div>
             </div>
+
             <button
               onClick={() => setShowLeaveConfirm(true)}
               className="p-2 bg-red-900/30 text-red-400 rounded-full hover:bg-red-900/50"
